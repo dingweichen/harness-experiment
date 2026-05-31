@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>知识库应用</title>
+  <style>
+    /* ──────────────── 全局重置 ──────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-primary: #1e1e2e;
+      --bg-secondary: #181825;
+      --bg-tertiary: #11111b;
+      --bg-surface: #313244;
+      --bg-hover: #45475a;
+      --bg-active: #585b70;
+      --text-primary: #cdd6f4;
+      --text-secondary: #bac2de;
+      --text-muted: #6c7086;
+      --accent-blue: #89b4fa;
+      --accent-green: #a6e3a1;
+      --accent-red: #f38ba8;
+      --accent-yellow: #f9e2af;
+      --accent-mauve: #cba6f7;
+      --border: #313244;
+      --sidebar-width: 280px;
+      --header-height: 52px;
+      --radius: 8px;
+      --radius-sm: 4px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    /* ──────────────── 布局骨架 ──────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* 顶部标题栏 */
+    #topbar {
+      display: flex;
+      align-items: center;
+      height: var(--header-height);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+
+    #topbar .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    #topbar .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-mauve));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    #topbar .app-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    #topbar .spacer { flex: 1; }
+
+    #topbar .topbar-btn {
+      -webkit-app-region: no-drag;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    #topbar .topbar-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    #topbar .data-path {
+      -webkit-app-region: no-drag;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'SF Mono', Consolas, monospace;
+    }
+
+    /* 主体区域 */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ──────────────── 左侧文档列表 ──────────────── */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .sidebar-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    #doc-search {
+      margin: 10px 12px;
+      padding: 8px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #doc-search:focus {
+      border-color: var(--accent-blue);
+    }
+
+    #doc-search::placeholder {
+      color: var(--text-muted);
+    }
+
+    #doc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    #doc-list::-webkit-scrollbar { width: 4px; }
+    #doc-list::-webkit-scrollbar-track { background: transparent; }
+    #doc-list::-webkit-scrollbar-thumb { background: var(--bg-active); border-radius: 2px; }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.12s;
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+
+    .doc-item:hover {
+      background: var(--bg-surface);
+    }
+
+    .doc-item.active {
+      background: rgba(137, 180, 250, 0.1);
+      border-left-color: var(--accent-blue);
+    }
+
+    .doc-item-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .doc-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .doc-item-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-item.active .doc-item-title {
+      color: var(--accent-blue);
+    }
+
+    .doc-item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .doc-item-del {
+      opacity: 0;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--accent-red);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.12s;
+      flex-shrink: 0;
+    }
+
+    .doc-item:hover .doc-item-del {
+      opacity: 1;
+    }
+
+    .doc-item-del:hover {
+      background: rgba(243, 139, 168, 0.15);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 40px;
+      opacity: 0.5;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ──────────────── 右侧主区域 ──────────────── */
+    #content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 标签页切换 */
+    #tab-bar {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    /* 文档阅读面板 */
+    #panel-doc {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #panel-doc.hidden,
+    #panel-qa.hidden {
+      display: none !important;
+    }
+
+    #doc-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    #doc-title-display {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .toolbar-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .toolbar-btn.primary {
+      background: rgba(137, 180, 250, 0.15);
+      border-color: rgba(137, 180, 250, 0.3);
+      color: var(--accent-blue);
+    }
+
+    .toolbar-btn.primary:hover {
+      background: rgba(137, 180, 250, 0.25);
+    }
+
+    #doc-content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #doc-viewer {
+      width: 100%;
+      height: 100%;
+      padding: 28px 40px;
+      overflow-y: auto;
+      line-height: 1.8;
+      color: var(--text-primary);
+      font-size: 14px;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+    }
+
+    #doc-editor {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: 28px 40px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      line-height: 1.8;
+      font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+      overflow-y: auto;
+    }
+
+    #doc-viewer::-webkit-scrollbar,
+    #doc-editor::-webkit-scrollbar { width: 6px; }
+    #doc-viewer::-webkit-scrollbar-track,
+    #doc-editor::-webkit-scrollbar-track { background: transparent; }
+    #doc-viewer::-webkit-scrollbar-thumb,
+    #doc-editor::-webkit-scrollbar-thumb { background: var(--bg-active); border-radius: 3px; }
+
+    /* 文档占位提示 */
+    #no-doc-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      gap: 16px;
+    }
+
+    #no-doc-hint .hint-icon { font-size: 60px; opacity: 0.3; }
+    #no-doc-hint h3 { font-size: 16px; font-weight: 500; color: var(--text-secondary); }
+    #no-doc-hint p { font-size: 13px; text-align: center; max-width: 280px; line-height: 1.6; }
+
+    /* ──────────────── 问答面板 ──────────────── */
+    #panel-qa {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #qa-scope-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    #qa-scope-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    #qa-scope-select {
+      flex: 1;
+      padding: 5px 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    #qa-scope-select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #chat-container::-webkit-scrollbar { width: 6px; }
+    #chat-container::-webkit-scrollbar-track { background: transparent; }
+    #chat-container::-webkit-scrollbar-thumb { background: var(--bg-active); border-radius: 3px; }
+
+    .chat-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 12px;
+    }
+
+    .chat-welcome .welcome-icon { font-size: 48px; opacity: 0.4; }
+    .chat-welcome h3 { font-size: 16px; color: var(--text-secondary); }
+    .chat-welcome p { font-size: 13px; line-height: 1.7; max-width: 320px; }
+
+    /* 示例问题 */
+    .example-questions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .example-q {
+      padding: 6px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .example-q:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 100%;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-mauve));
+    }
+
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.user .message-bubble {
+      background: rgba(137, 180, 250, 0.15);
+      border: 1px solid rgba(137, 180, 250, 0.25);
+      border-radius: var(--radius) 2px var(--radius) var(--radius);
+      color: var(--text-primary);
+    }
+
+    .message.assistant .message-bubble {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 2px var(--radius) var(--radius) var(--radius);
+      color: var(--text-primary);
+    }
+
+    .message.assistant .message-bubble.error {
+      border-color: rgba(243, 139, 168, 0.3);
+      background: rgba(243, 139, 168, 0.1);
+      color: var(--accent-red);
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .message.user .message-time { text-align: right; }
+    .message.assistant .message-time { text-align: left; }
+
+    /* 打字动画 */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 16px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typingDot 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* 底部输入区 */
+    #qa-input-area {
+      padding: 16px 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    #qa-input-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+    }
+
+    #qa-input-wrapper:focus-within {
+      border-color: var(--accent-blue);
+    }
+
+    #qa-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      line-height: 1.5;
+      resize: none;
+      min-height: 20px;
+      max-height: 120px;
+      font-family: inherit;
+      overflow-y: auto;
+    }
+
+    #qa-input::placeholder { color: var(--text-muted); }
+
+    #qa-input::-webkit-scrollbar { width: 4px; }
+    #qa-input::-webkit-scrollbar-track { background: transparent; }
+    #qa-input::-webkit-scrollbar-thumb { background: var(--bg-active); border-radius: 2px; }
+
+    #qa-send-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-blue);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--bg-tertiary);
+      cursor: pointer;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    #qa-send-btn:hover { background: #b4c9fd; transform: scale(1.05); }
+    #qa-send-btn:disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; transform: none; }
+
+    #qa-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* ──────────────── 新建文档模态框 ──────────────── */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #modal-overlay.visible {
+      display: flex;
+    }
+
+    #modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 480px;
+      max-width: 90vw;
+      box-shadow: var(--shadow);
+    }
+
+    #modal h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .form-group textarea {
+      height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: var(--bg-tertiary);
+    }
+
+    .btn-primary:hover { background: #b4c9fd; }
+
+    /* ──────────────── Toast 通知 ──────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--bg-tertiary);
+      box-shadow: var(--shadow);
+      animation: toastIn 0.25s ease;
+      pointer-events: auto;
+    }
+
+    .toast.success { background: var(--accent-green); }
+    .toast.error { background: var(--accent-red); }
+    .toast.info { background: var(--accent-blue); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部标题栏 -->
+    <header id="topbar">
+      <div class="logo">
+        <div class="logo-icon">📚</div>
+        <span class="app-title">知识库</span>
+      </div>
+      <span class="spacer"></span>
+      <span id="data-path-display" class="data-path" title="数据目录"></span>
+      <button class="topbar-btn" id="btn-import">
+        <span>📥</span> 导入文档
+      </button>
+      <button class="topbar-btn" id="btn-new">
+        <span>✏️</span> 新建文档
+      </button>
+    </header>
+
+    <!-- 主体 -->
+    <div id="main">
+      <!-- 左侧文档列表 -->
+      <aside id="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">文档列表</span>
+          <div class="sidebar-actions">
+            <button class="icon-btn" id="btn-refresh" title="刷新列表">↻</button>
+          </div>
+        </div>
+        <input type="text" id="doc-search" placeholder="🔍 搜索文档..." />
+        <div id="doc-list">
+          <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <p>暂无文档<br/>点击「新建文档」或「导入文档」开始使用</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 右侧内容区 -->
+      <div id="content">
+        <!-- 标签页切换 -->
+        <nav id="tab-bar">
+          <button class="tab-btn active" data-tab="doc">📄 文档阅读</button>
+          <button class="tab-btn" data-tab="qa">💬 智能问答</button>
+        </nav>
+
+        <!-- 文档阅读面板 -->
+        <div id="panel-doc">
+          <div id="doc-toolbar">
+            <span id="doc-title-display">未选择文档</span>
+            <div style="display:flex;gap:8px;">
+              <button class="toolbar-btn" id="btn-edit-toggle">✏️ 编辑</button>
+              <button class="toolbar-btn primary" id="btn-save" style="display:none;">💾 保存</button>
+              <button class="toolbar-btn" id="btn-cancel-edit" style="display:none;">✕ 取消</button>
+            </div>
+          </div>
+          <div id="doc-content-area">
+            <div id="no-doc-hint">
+              <div class="hint-icon">📝</div>
+              <h3>选择一篇文档开始阅读</h3>
+              <p>从左侧列表选择文档，或新建/导入文档</p>
+            </div>
+            <div id="doc-viewer" style="display:none;"></div>
+            <textarea id="doc-editor" placeholder="在此输入文档内容..."></textarea>
+          </div>
+        </div>
+
+        <!-- 问答面板 -->
+        <div id="panel-qa">
+          <div id="qa-scope-bar">
+            <span id="qa-scope-label">搜索范围：</span>
+            <select id="qa-scope-select">
+              <option value="">🌐 全部文档</option>
+            </select>
+          </div>
+          <div id="chat-container">
+            <div class="chat-welcome">
+              <div class="welcome-icon">🤖</div>
+              <h3>知识库智能问答</h3>
+              <p>基于您导入的文档，通过关键词匹配为您检索相关内容</p>
+              <div class="example-questions">
+                <span class="example-q" onclick="fillQuestion(this.textContent)">这个文档讲了什么？</span>
+                <span class="example-q" onclick="fillQuestion(this.textContent)">如何开始使用？</span>
+                <span class="example-q" onclick="fillQuestion(this.textContent)">有哪些主要功能？</span>
+              </div>
+            </div>
+          </div>
+          <div id="qa-input-area">
+            <div id="qa-input-wrapper">
+              <textarea id="qa-input" rows="1" placeholder="输入您的问题，按 Enter 发送，Shift+Enter 换行..."></textarea>
+              <button id="qa-send-btn" title="发送">↑</button>
+            </div>
+            <div id="qa-hint">基于关键词检索，在知识库文档中搜索相关内容</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建文档模态框 -->
+  <div id="modal-overlay">
+    <div id="modal">
+      <h3>✏️ 新建文档</h3>
+      <div class="form-group">
+        <label>文档标题 *</label>
+        <input type="text" id="new-doc-title" placeholder="请输入文档标题..." />
+      </div>
+      <div class="form-group">
+        <label>文档内容</label>
+        <textarea id="new-doc-content" placeholder="请输入文档内容（支持 Markdown 格式）..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="modal-cancel">取消</button>
+        <button class="btn btn-primary" id="modal-confirm">创建文档</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div id="toast-container"></div>
+
+  <script>
+    // ──────────────── 状态 ────────────────
+    let allDocs = [];
+    let currentDoc = null;   // { name, title, content }
+    let isEditing = false;
+    let isSending = false;
+    let chatHistory = [];    // { role: 'user'|'assistant', content, time }
+
+    // ──────────────── 工具函数 ────────────────
+    function showToast(msg, type = 'info', duration = 2800) {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s';
+        setTimeout(() => el.remove(), 300);
+      }, duration);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    function formatTime() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      return (bytes / 1024).toFixed(1) + ' KB';
+    }
+
+    function fillQuestion(text) {
+      document.getElementById('qa-input').value = text;
+      document.getElementById('qa-input').focus();
+    }
+
+    // ──────────────── 初始化 ────────────────
+    async function init() {
+      // 显示数据目录路径
+      const dataDir = await window.electronAPI.app.getDataDir();
+      const pathEl = document.getElementById('data-path-display');
+      pathEl.textContent = dataDir;
+      pathEl.title = `数据目录：${dataDir}`;
+
+      // 加载文档列表
+      await loadDocs();
+
+      // 绑定事件
+      bindEvents();
+    }
+
+    // ──────────────── 文档列表 ────────────────
+    async function loadDocs() {
+      const result = await window.electronAPI.docs.list();
+      if (!result.success) {
+        showToast('加载文档失败：' + result.error, 'error');
+        return;
+      }
+      allDocs = result.data;
+      renderDocList(allDocs);
+      updateQAScope(allDocs);
+    }
+
+    function renderDocList(docs) {
+      const container = document.getElementById('doc-list');
+      if (docs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <p>暂无文档<br/>点击「新建文档」或「导入文档」开始使用</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = docs.map(doc => `
+        <div class="doc-item ${currentDoc && currentDoc.name === doc.name ? 'active' : ''}"
+             data-name="${doc.name}"
+             onclick="selectDoc('${doc.name}')">
+          <div class="doc-item-icon">${doc.name.endsWith('.md') ? '📄' : '📃'}</div>
+          <div class="doc-item-info">
+            <div class="doc-item-title">${doc.title}</div>
+            <div class="doc-item-meta">${formatSize(doc.size)} · ${formatDate(doc.modified)}</div>
+          </div>
+          <button class="doc-item-del" title="删除" onclick="event.stopPropagation(); deleteDoc('${doc.name}')">🗑</button>
+        </div>
+      `).join('');
+    }
+
+    function updateQAScope(docs) {
+      const select = document.getElementById('qa-scope-select');
+      const currentVal = select.value;
+      select.innerHTML = `<option value="">🌐 全部文档</option>`;
+      docs.forEach(doc => {
+        const opt = document.createElement('option');
+        opt.value = doc.name;
+        opt.textContent = `📄 ${doc.title}`;
+        if (doc.name === currentVal) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    async function selectDoc(name) {
+      // 如果正在编辑，提示保存
+      if (isEditing) {
+        const ok = confirm('当前文档有未保存的修改，是否放弃？');
+        if (!ok) return;
+        cancelEdit();
+      }
+
+      const result = await window.electronAPI.docs.read(name);
+      if (!result.success) {
+        showToast('读取文档失败：' + result.error, 'error');
+        return;
+      }
+
+      const doc = allDocs.find(d => d.name === name);
+      currentDoc = { name, title: doc ? doc.title : name, content: result.data };
+
+      // 更新列表高亮
+      document.querySelectorAll('.doc-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.name === name);
+      });
+
+      // 更新标题栏
+      document.getElementById('doc-title-display').textContent = currentDoc.title;
+
+      // 显示内容
+      const hint = document.getElementById('no-doc-hint');
+      const viewer = document.getElementById('doc-viewer');
+      hint.style.display = 'none';
+      viewer.style.display = 'block';
+      viewer.textContent = result.data;
+
+      // 更新问答范围
+      document.getElementById('qa-scope-select').value = name;
+    }
+
+    async function deleteDoc(name) {
+      const doc = allDocs.find(d => d.name === name);
+      const title = doc ? doc.title : name;
+      if (!confirm(`确认删除文档「${title}」？此操作不可撤销。`)) return;
+
+      const result = await window.electronAPI.docs.delete(name);
+      if (!result.success) {
+        showToast('删除失败：' + result.error, 'error');
+        return;
+      }
+
+      showToast(`已删除「${title}」`, 'info');
+      if (currentDoc && currentDoc.name === name) {
+        currentDoc = null;
+        document.getElementById('no-doc-hint').style.display = 'flex';
+        document.getElementById('doc-viewer').style.display = 'none';
+        document.getElementById('doc-title-display').textContent = '未选择文档';
+      }
+      await loadDocs();
+    }
+
+    // ──────────────── 编辑功能 ────────────────
+    function startEdit() {
+      if (!currentDoc) {
+        showToast('请先选择一篇文档', 'info');
+        return;
+      }
+      isEditing = true;
+      const editor = document.getElementById('doc-editor');
+      const viewer = document.getElementById('doc-viewer');
+      editor.value = currentDoc.content;
+      editor.style.display = 'block';
+      viewer.style.display = 'none';
+      document.getElementById('btn-edit-toggle').style.display = 'none';
+      document.getElementById('btn-save').style.display = 'flex';
+      document.getElementById('btn-cancel-edit').style.display = 'flex';
+      editor.focus();
+    }
+
+    function cancelEdit() {
+      isEditing = false;
+      const editor = document.getElementById('doc-editor');
+      const viewer = document.getElementById('doc-viewer');
+      editor.style.display = 'none';
+      viewer.style.display = 'block';
+      document.getElementById('btn-edit-toggle').style.display = '';
+      document.getElementById('btn-save').style.display = 'none';
+      document.getElementById('btn-cancel-edit').style.display = 'none';
+    }
+
+    async function saveDoc() {
+      if (!currentDoc) return;
+      const content = document.getElementById('doc-editor').value;
+      const result = await window.electronAPI.docs.update(currentDoc.name, content);
+      if (!result.success) {
+        showToast('保存失败：' + result.error, 'error');
+        return;
+      }
+      currentDoc.content = content;
+      document.getElementById('doc-viewer').textContent = content;
+      showToast('保存成功', 'success');
+      cancelEdit();
+      await loadDocs();
+    }
+
+    // ──────────────── 新建文档 ────────────────
+    function openNewDocModal() {
+      document.getElementById('new-doc-title').value = '';
+      document.getElementById('new-doc-content').value = '';
+      document.getElementById('modal-overlay').classList.add('visible');
+      setTimeout(() => document.getElementById('new-doc-title').focus(), 50);
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+    }
+
+    async function createDoc() {
+      const title = document.getElementById('new-doc-title').value.trim();
+      if (!title) {
+        showToast('请输入文档标题', 'info');
+        document.getElementById('new-doc-title').focus();
+        return;
+      }
+      const content = document.getElementById('new-doc-content').value;
+      const result = await window.electronAPI.docs.create(title, content);
+      if (!result.success) {
+        showToast('创建失败：' + result.error, 'error');
+        return;
+      }
+      showToast(`已创建「${title}」`, 'success');
+      closeModal();
+      await loadDocs();
+      // 自动选中新文档
+      await selectDoc(result.data.name);
+    }
+
+    // ──────────────── 导入文档 ────────────────
+    async function importDocs() {
+      const result = await window.electronAPI.docs.import();
+      if (result.canceled) return;
+      if (!result.success) {
+        showToast('导入失败：' + result.error, 'error');
+        return;
+      }
+      showToast(`已导入 ${result.data.length} 个文档`, 'success');
+      await loadDocs();
+    }
+
+    // ──────────────── 问答功能 ────────────────
+    function appendMessage(role, content, isTyping = false) {
+      const container = document.getElementById('chat-container');
+
+      // 移除欢迎界面
+      const welcome = container.querySelector('.chat-welcome');
+      if (welcome) welcome.remove();
+
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+
+      const avatar = role === 'user' ? '👤' : '🤖';
+      const time = formatTime();
+
+      if (isTyping) {
+        div.id = 'typing-msg';
+        div.innerHTML = `
+          <div class="message-avatar">${avatar}</div>
+          <div>
+            <div class="message-bubble">
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        div.innerHTML = `
+          <div class="message-avatar">${avatar}</div>
+          <div>
+            <div class="message-bubble ${role === 'assistant' && content.startsWith('⚠️') ? 'error' : ''}">${escapeHtml(content)}</div>
+            <div class="message-time">${time}</div>
+          </div>`;
+      }
+
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      return div;
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br/>');
+    }
+
+    async function sendQuestion() {
+      if (isSending) return;
+      const input = document.getElementById('qa-input');
+      const question = input.value.trim();
+      if (!question) return;
+
+      isSending = true;
+      document.getElementById('qa-send-btn').disabled = true;
+      input.value = '';
+      input.style.height = 'auto';
+
+      // 添加用户消息
+      appendMessage('user', question);
+
+      // 显示打字动画
+      const typingEl = appendMessage('assistant', '', true);
+
+      // 获取搜索范围
+      const docName = document.getElementById('qa-scope-select').value || null;
+
+      // 发送查询
+      const result = await window.electronAPI.qa.query(question, docName);
+      typingEl.remove();
+
+      if (!result.success) {
+        appendMessage('assistant', '⚠️ 查询失败：' + result.error);
+      } else {
+        appendMessage('assistant', result.data);
+      }
+
+      isSending = false;
+      document.getElementById('qa-send-btn').disabled = false;
+      input.focus();
+    }
+
+    // ──────────────── 标签页切换 ────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.getElementById('panel-doc').classList.toggle('hidden', tab !== 'doc');
+      document.getElementById('panel-qa').classList.toggle('hidden', tab !== 'qa');
+    }
+    // 初始状态：默认显示文档面板，隐藏问答面板
+    switchTab('doc');
+
+    // ──────────────── 搜索过滤 ────────────────
+    function filterDocs(keyword) {
+      if (!keyword.trim()) {
+        renderDocList(allDocs);
+        return;
+      }
+      const kw = keyword.toLowerCase();
+      const filtered = allDocs.filter(d =>
+        d.title.toLowerCase().includes(kw) || d.name.toLowerCase().includes(kw)
+      );
+      renderDocList(filtered);
+    }
+
+    // ──────────────── 事件绑定 ────────────────
+    function bindEvents() {
+      // 顶部按钮
+      document.getElementById('btn-new').addEventListener('click', openNewDocModal);
+      document.getElementById('btn-import').addEventListener('click', importDocs);
+      document.getElementById('btn-refresh').addEventListener('click', () => {
+        loadDocs();
+        showToast('已刷新文档列表', 'info');
+      });
+
+      // 编辑按钮
+      document.getElementById('btn-edit-toggle').addEventListener('click', startEdit);
+      document.getElementById('btn-save').addEventListener('click', saveDoc);
+      document.getElementById('btn-cancel-edit').addEventListener('click', cancelEdit);
+
+      // 模态框
+      document.getElementById('btn-new').addEventListener('click', openNewDocModal);
+      document.getElementById('modal-cancel').addEventListener('click', closeModal);
+      document.getElementById('modal-confirm').addEventListener('click', createDoc);
+      document.getElementById('modal-overlay').addEventListener('click', e => {
+        if (e.target === document.getElementById('modal-overlay')) closeModal();
+      });
+
+      // 新建文档回车提交
+      document.getElementById('new-doc-title').addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('new-doc-content').focus();
+        }
+      });
+
+      // 标签页
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      // 文档搜索
+      document.getElementById('doc-search').addEventListener('input', e => {
+        filterDocs(e.target.value);
+      });
+
+      // 问答输入
+      const qaInput = document.getElementById('qa-input');
+      qaInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendQuestion();
+        }
+      });
+      qaInput.addEventListener('input', () => {
+        qaInput.style.height = 'auto';
+        qaInput.style.height = Math.min(qaInput.scrollHeight, 120) + 'px';
+      });
+      document.getElementById('qa-send-btn').addEventListener('click', sendQuestion);
+
+      // 快捷键
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          closeModal();
+          if (isEditing) cancelEdit();
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+          e.preventDefault();
+          if (isEditing) saveDoc();
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+          e.preventDefault();
+          openNewDocModal();
+        }
+      });
+    }
+
+    // ──────────────── 启动 ────────────────
+    init();
+  </script>
+</body>
+</html>
