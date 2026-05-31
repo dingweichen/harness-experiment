@@ -8,7 +8,7 @@
       "description": "Electron app opens a BrowserWindow with correct dimensions and preload script",
       "status": "pass",
       "evidence": "npm run dev (or npm start) launches window at 1200x800 with contextIsolation=true and nodeIntegration=false; preload script exposed via contextBridge as window.knowledgeBase",
-      "testedAt": "2026-05-30T06:35:00Z"
+      "testedAt": "2026-05-31T07:55:00Z"
     },
     {
       "id": "document-list",
@@ -16,7 +16,7 @@
       "description": "Left sidebar shows imported documents with empty state message",
       "status": "pass",
       "evidence": "DocumentList component renders empty state ('No documents imported yet.') when no documents present, and shows document cards with title, size, and index status when data is available",
-      "testedAt": "2026-05-30T06:35:00Z"
+      "testedAt": "2026-05-31T07:55:00Z"
     },
     {
       "id": "question-panel",
@@ -24,7 +24,7 @@
       "description": "Right panel Q&A area accepts questions and submits via IPC",
       "status": "pass",
       "evidence": "QuestionPanel renders text input and Ask button at the bottom of the right panel; submits to window.knowledgeBase.qa.ask on Enter key or button click; response with citations is displayed above the input",
-      "testedAt": "2026-05-30T06:35:00Z"
+      "testedAt": "2026-05-31T07:55:00Z"
     },
     {
       "id": "data-directory",
@@ -32,7 +32,7 @@
       "description": "PersistenceService creates and manages userData/knowledge-base-data directory",
       "status": "pass",
       "evidence": "PersistenceService constructor calls ensureDirectories() creating data, documents, and index subdirectories under app.getPath('userData')/knowledge-base-data/ using fs.mkdirSync with recursive:true",
-      "testedAt": "2026-05-30T06:35:00Z"
+      "testedAt": "2026-05-31T07:55:00Z"
     }
   ]
 }
